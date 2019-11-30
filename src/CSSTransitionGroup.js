@@ -6,51 +6,58 @@ import CSSTransitionGroupChild from './CSSTransitionGroupChild';
 import { nameShape, transitionTimeout } from './utils/PropTypes';
 
 const propTypes = {
-  transitionName: nameShape.isRequired,
+	transitionName: nameShape.isRequired,
 
-  transitionAppear: PropTypes.bool,
-  transitionEnter: PropTypes.bool,
-  transitionLeave: PropTypes.bool,
-  transitionAppearTimeout: transitionTimeout('Appear'),
-  transitionEnterTimeout: transitionTimeout('Enter'),
-  transitionLeaveTimeout: transitionTimeout('Leave'),
+	transitionAppear: PropTypes.bool,
+	transitionEnter: PropTypes.bool,
+	transitionLeave: PropTypes.bool,
+	transitionAppearTimeout: transitionTimeout('Appear'),
+	transitionEnterTimeout: transitionTimeout('Enter'),
+	transitionLeaveTimeout: transitionTimeout('Leave'),
 };
 
 const defaultProps = {
-  transitionAppear: false,
-  transitionEnter: true,
-  transitionLeave: true,
+	transitionAppear: false,
+	transitionEnter: true,
+	transitionLeave: true,
 };
 
 class CSSTransitionGroup extends React.Component {
+	constructor() {
+		super();
 
-  static displayName = 'CSSTransitionGroup';
+		this.currentlyTransitioningKeys = {};
+		this.keysToEnter = [];
+		this.keysToLeave = [];
+	}
 
-  // We need to provide this childFactory so that
-  // ReactCSSTransitionGroupChild can receive updates to name, enter, and
-  // leave while it is leaving.
-  _wrapChild = child => (
-    React.createElement(
-      CSSTransitionGroupChild,
-      {
-        name: this.props.transitionName,
-        appear: this.props.transitionAppear,
-        enter: this.props.transitionEnter,
-        leave: this.props.transitionLeave,
-        appearTimeout: this.props.transitionAppearTimeout,
-        enterTimeout: this.props.transitionEnterTimeout,
-        leaveTimeout: this.props.transitionLeaveTimeout,
-      },
-      child,
-    )
-  );
+	static displayName = 'CSSTransitionGroup';
 
-  render() {
-    return React.createElement(
-      TransitionGroup,
-      Object.assign({}, this.props, { childFactory: this._wrapChild }),
-    );
-  }
+	// We need to provide this childFactory so that
+	// ReactCSSTransitionGroupChild can receive updates to name, enter, and
+	// leave while it is leaving.
+	_wrapChild = child => (
+		React.createElement(
+			CSSTransitionGroupChild,
+			{
+				name: this.props.transitionName,
+				appear: this.props.transitionAppear,
+				enter: this.props.transitionEnter,
+				leave: this.props.transitionLeave,
+				appearTimeout: this.props.transitionAppearTimeout,
+				enterTimeout: this.props.transitionEnterTimeout,
+				leaveTimeout: this.props.transitionLeaveTimeout,
+			},
+			child,
+		)
+	);
+
+	render() {
+		return React.createElement(
+			TransitionGroup,
+			Object.assign({}, this.props, { childFactory: this._wrapChild }),
+		);
+	}
 }
 
 CSSTransitionGroup.propTypes = propTypes;

@@ -454,12 +454,6 @@ var TransitionGroup = function (_React$Component) {
     return _this;
   }
 
-  TransitionGroup.prototype.componentWillMount = function componentWillMount() {
-    this.currentlyTransitioningKeys = {};
-    this.keysToEnter = [];
-    this.keysToLeave = [];
-  };
-
   TransitionGroup.prototype.componentDidMount = function componentDidMount() {
     var initialChildMapping = this.state.children;
     for (var key in initialChildMapping) {
@@ -1921,11 +1915,6 @@ var CSSTransitionGroupChild = function (_React$Component) {
       }
     }, _temp), _possibleConstructorReturn(_this, _ret);
   }
-
-  CSSTransitionGroupChild.prototype.componentWillMount = function componentWillMount() {
-    this.classNameAndNodeQueue = [];
-    this.transitionTimeouts = [];
-  };
 
   CSSTransitionGroupChild.prototype.componentWillUnmount = function componentWillUnmount() {
     this.unmounted = true;
