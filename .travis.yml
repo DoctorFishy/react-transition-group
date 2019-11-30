@@ -1,7 +1,7 @@
 sudo: false
-
 language: node_js
 node_js:
+<<<<<<< HEAD
   - stable
 
 cache:
@@ -12,6 +12,16 @@ cache:
 script:
   - yarn test
 
+=======
+  - "11.10"
+cache: yarn
+script:
+  - yarn test
+
+after_success:
+  - npm run build
+  - npm run semantic-release
+>>>>>>> 318db104c7ba4f279392111c11397d2f053594e7
 branches:
   only:
     - master

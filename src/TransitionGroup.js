@@ -1,36 +1,58 @@
+<<<<<<< HEAD
 import chain from 'chain-function';
 import React from 'react';
 import PropTypes from 'prop-types';
 import warning from 'warning';
 import { polyfill } from 'react-lifecycles-compat';
+=======
+import PropTypes from 'prop-types'
+import React from 'react'
+import TransitionGroupContext from './TransitionGroupContext'
+>>>>>>> 318db104c7ba4f279392111c11397d2f053594e7
 
-import { getChildMapping, mergeChildMappings } from './utils/ChildMapping';
+import {
+  getChildMapping,
+  getInitialChildMapping,
+  getNextChildMapping,
+} from './utils/ChildMapping'
 
-
-const propTypes = {
-  component: PropTypes.any,
-  childFactory: PropTypes.func,
-  children: PropTypes.node,
-};
+const values = Object.values || (obj => Object.keys(obj).map(k => obj[k]))
 
 const defaultProps = {
-  component: 'span',
+  component: 'div',
   childFactory: child => child,
-};
+}
 
-
+/**
+ * The `<TransitionGroup>` component manages a set of transition components
+ * (`<Transition>` and `<CSSTransition>`) in a list. Like with the transition
+ * components, `<TransitionGroup>` is a state machine for managing the mounting
+ * and unmounting of components over time.
+ *
+ * Consider the example below. As items are removed or added to the TodoList the
+ * `in` prop is toggled automatically by the `<TransitionGroup>`.
+ *
+ * Note that `<TransitionGroup>`  does not define any animation behavior!
+ * Exactly _how_ a list item animates is up to the individual transition
+ * component. This means you can mix and match animations across different list
+ * items.
+ */
 class TransitionGroup extends React.Component {
-  static displayName = 'TransitionGroup';
-
   constructor(props, context) {
-    super(props, context);
+    super(props, context)
 
+<<<<<<< HEAD
     this.childRefs = Object.create(null);
     this.currentlyTransitioningKeys = {};
     this.keysToEnter = [];
     this.keysToLeave = [];
+=======
+    const handleExited = this.handleExited.bind(this)
+>>>>>>> 318db104c7ba4f279392111c11397d2f053594e7
 
+    // Initial children should all be entering, dependent on appear
     this.state = {
+<<<<<<< HEAD
       children: getChildMapping(props.children),
     };
   }
@@ -102,8 +124,38 @@ class TransitionGroup extends React.Component {
   _handleDoneAppearing = (key, component) => {
     if (component && component.componentDidAppear) {
       component.componentDidAppear();
+=======
+      contextValue: { isMounting: true },
+      handleExited,
+      firstRender: true,
     }
+  }
 
+  componentDidMount() {
+    this.mounted = true
+    this.setState({
+      contextValue: { isMounting: false },
+    })
+  }
+
+  componentWillUnmount() {
+    this.mounted = false
+  }
+
+  static getDerivedStateFromProps(
+    nextProps,
+    { children: prevChildMapping, handleExited, firstRender }
+  ) {
+    return {
+      children: firstRender
+        ? getInitialChildMapping(nextProps, handleExited)
+        : getNextChildMapping(nextProps, prevChildMapping, handleExited),
+      firstRender: false,
+>>>>>>> 318db104c7ba4f279392111c11397d2f053594e7
+    }
+  }
+
+<<<<<<< HEAD
     delete this.currentlyTransitioningKeys[key];
 
     let currentChildMapping = getChildMapping(this.props.children);
@@ -157,85 +209,111 @@ class TransitionGroup extends React.Component {
   _handleDoneLeaving = (key, component) => {
     if (component && component.componentDidLeave) {
       component.componentDidLeave();
+=======
+  handleExited(child, node) {
+    let currentChildMapping = getChildMapping(this.props.children)
+
+    if (child.key in currentChildMapping) return
+
+    if (child.props.onExited) {
+      child.props.onExited(node)
+>>>>>>> 318db104c7ba4f279392111c11397d2f053594e7
     }
 
-    delete this.currentlyTransitioningKeys[key];
+    if (this.mounted) {
+      this.setState(state => {
+        let children = { ...state.children }
 
-    let currentChildMapping = getChildMapping(this.props.children);
-
-    if (currentChildMapping && currentChildMapping.hasOwnProperty(key)) {
-      // This entered again before it fully left. Add it again.
-      this.keysToEnter.push(key);
-    } else {
-      this.setState((state) => {
-        let newChildren = Object.assign({}, state.children);
-        delete newChildren[key];
-        return { children: newChildren };
-      });
+        delete children[child.key]
+        return { children }
+      })
     }
-  };
+  }
 
   render() {
-    // TODO: we could get rid of the need for the wrapper node
-    // by cloning a single child
-    let childrenToRender = [];
-    for (let key in this.state.children) {
-      let child = this.state.children[key];
-      if (child) {
-        let isCallbackRef = typeof child.ref !== 'string';
-        let factoryChild = this.props.childFactory(child);
-        let ref = (r) => {
-          this.childRefs[key] = r;
-        };
+    const { component: Component, childFactory, ...props } = this.props
+    const { contextValue } = this.state
+    const children = values(this.state.children).map(childFactory)
 
-        warning(isCallbackRef,
-          'string refs are not supported on children of TransitionGroup and will be ignored. ' +
-          'Please use a callback ref instead: https://facebook.github.io/react/docs/refs-and-the-dom.html#the-ref-callback-attribute');
+    delete props.appear
+    delete props.enter
+    delete props.exit
 
-        // Always chaining the refs leads to problems when the childFactory
-        // wraps the child. The child ref callback gets called twice with the
-        // wrapper and the child. So we only need to chain the ref if the
-        // factoryChild is not different from child.
-        if (factoryChild === child && isCallbackRef) {
-          ref = chain(child.ref, ref);
-        }
-
-        // You may need to apply reactive updates to a child as it is leaving.
-        // The normal React way to do it won't work since the child will have
-        // already been removed. In case you need this behavior you can provide
-        // a childFactory function to wrap every child, even the ones that are
-        // leaving.
-        childrenToRender.push(React.cloneElement(
-          factoryChild,
-          {
-            key,
-            ref,
-          },
-        ));
-      }
+    if (Component === null) {
+      return (
+        <TransitionGroupContext.Provider value={contextValue}>
+          {children}
+        </TransitionGroupContext.Provider>
+      )
     }
-
-    // Do not forward TransitionGroup props to primitive DOM nodes
-    let props = Object.assign({}, this.props);
-    delete props.transitionLeave;
-    delete props.transitionName;
-    delete props.transitionAppear;
-    delete props.transitionEnter;
-    delete props.childFactory;
-    delete props.transitionLeaveTimeout;
-    delete props.transitionEnterTimeout;
-    delete props.transitionAppearTimeout;
-    delete props.component;
-
-    return React.createElement(
-      this.props.component,
-      props,
-      childrenToRender,
-    );
+    return (
+      <TransitionGroupContext.Provider value={contextValue}>
+        <Component {...props}>{children}</Component>
+      </TransitionGroupContext.Provider>
+    )
   }
 }
 
-TransitionGroup.propTypes = propTypes;
-TransitionGroup.defaultProps = defaultProps;
+TransitionGroup.propTypes = {
+  /**
+   * `<TransitionGroup>` renders a `<div>` by default. You can change this
+   * behavior by providing a `component` prop.
+   * If you use React v16+ and would like to avoid a wrapping `<div>` element
+   * you can pass in `component={null}`. This is useful if the wrapping div
+   * borks your css styles.
+   */
+  component: PropTypes.any,
+  /**
+   * A set of `<Transition>` components, that are toggled `in` and out as they
+   * leave. the `<TransitionGroup>` will inject specific transition props, so
+   * remember to spread them through if you are wrapping the `<Transition>` as
+   * with our `<Fade>` example.
+   *
+   * While this component is meant for multiple `Transition` or `CSSTransition`
+   * children, sometimes you may want to have a single transition child with
+   * content that you want to be transitioned out and in when you change it
+   * (e.g. routes, images etc.) In that case you can change the `key` prop of
+   * the transition child as you change its content, this will cause
+   * `TransitionGroup` to transition the child out and back in.
+   */
+  children: PropTypes.node,
 
+  /**
+   * A convenience prop that enables or disables appear animations
+   * for all children. Note that specifying this will override any defaults set
+   * on individual children Transitions.
+   */
+  appear: PropTypes.bool,
+  /**
+   * A convenience prop that enables or disables enter animations
+   * for all children. Note that specifying this will override any defaults set
+   * on individual children Transitions.
+   */
+  enter: PropTypes.bool,
+  /**
+   * A convenience prop that enables or disables exit animations
+   * for all children. Note that specifying this will override any defaults set
+   * on individual children Transitions.
+   */
+  exit: PropTypes.bool,
+
+  /**
+   * You may need to apply reactive updates to a child as it is exiting.
+   * This is generally done by using `cloneElement` however in the case of an exiting
+   * child the element has already been removed and not accessible to the consumer.
+   *
+   * If you do need to update a child as it leaves you can provide a `childFactory`
+   * to wrap every child, even the ones that are leaving.
+   *
+   * @type Function(child: ReactElement) -> ReactElement
+   */
+  childFactory: PropTypes.func,
+}
+
+TransitionGroup.defaultProps = defaultProps
+
+<<<<<<< HEAD
 export default polyfill(TransitionGroup);
+=======
+export default TransitionGroup
+>>>>>>> 318db104c7ba4f279392111c11397d2f053594e7

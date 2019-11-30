@@ -1,5 +1,6 @@
-# react-transition-group
+# react-transition-group [![npm][npm-badge]][npm]
 
+<<<<<<< HEAD
 A fork, and "drop in" replacement for the original React TransitionGroup addons. Eventually this package can supercede the original addon, letting the React team focus on other stuff and giving these components a chance to get the attention they deserve out on their own. See: https://github.com/facebook/react/issues/8125 for more context.
 
 A ton of thanks to the React team, and contributors for writing and maintaining these components for so long!
@@ -148,220 +149,37 @@ During the initial mount `CSSTransitionGroup` will get the `example-appear` CSS 
 At the initial mount, all children of the `CSSTransitionGroup` will `appear` but not `enter`. However, all children later added to an existing `CSSTransitionGroup` will `enter` but not `appear`.
 
 > Note:
+=======
+> **ATTENTION!** To address many issues that have come up over the years, the API in v2 and above is not backwards compatible with the original [`React addon (v1-stable)`](https://github.com/reactjs/react-transition-group/tree/v1-stable).
+>>>>>>> 318db104c7ba4f279392111c11397d2f053594e7
 >
-> The prop `transitionAppear` was added to `CSSTransitionGroup` in version `0.13`. To maintain backwards compatibility, the default value is set to `false`.
+> **For a drop-in replacement for `react-addons-transition-group` and `react-addons-css-transition-group`, use the v1 release. Documentation and code for that release are available on the [`v1-stable`](https://github.com/reactjs/react-transition-group/tree/v1-stable) branch.**
 >
-> However, the default values of `transitionEnter` and `transitionLeave` are `true` so you must specify `transitionEnterTimeout` and `transitionLeaveTimeout` by default. If you don't need either enter or leave animations, pass `transitionEnter={false}` or `transitionLeave={false}`.
+> We are no longer updating the v1 codebase, please upgrade to the latest version when possible
 
-### Custom Classes
+A set of components for managing component states (including mounting and unmounting) over time, specifically designed with animation in mind.
 
-It is also possible to use custom class names for each of the steps in your transitions. Instead of passing a string into transitionName you can pass an object containing either the `enter` and `leave` class names, or an object containing the `enter`, `enter-active`, `leave-active`, and `leave` class names. If only the enter and leave classes are provided, the enter-active and leave-active classes will be determined by appending '-active' to the end of the class name. Here are two examples using custom classes:
+## Documentation
 
-```javascript
-// ...
-<CSSTransitionGroup
-  transitionName={ {
-    enter: 'enter',
-    enterActive: 'enterActive',
-    leave: 'leave',
-    leaveActive: 'leaveActive',
-    appear: 'appear',
-    appearActive: 'appearActive'
-  } }>
-  {item}
-</CSSTransitionGroup>
+- [**Main documentation**](https://reactcommunity.org/react-transition-group/)
+- [Migration guide from v1](/Migration.md)
 
-<CSSTransitionGroup
-  transitionName={ {
-    enter: 'enter',
-    leave: 'leave',
-    appear: 'appear'
-  } }>
-  {item2}
-</CSSTransitionGroup>
-// ...
+## TypeScript
+TypeScript definitions are published via [**DefinitelyTyped**](https://github.com/DefinitelyTyped/DefinitelyTyped) and can be installed via the following command:
+
+```
+npm install @types/react-transition-group
 ```
 
-### Animation Group Must Be Mounted To Work
+## Examples
 
-In order for it to apply transitions to its children, the `CSSTransitionGroup` must already be mounted in the DOM or the prop `transitionAppear` must be set to `true`.
+Clone the repo first:
 
-The example below would **not** work, because the `CSSTransitionGroup` is being mounted along with the new item, instead of the new item being mounted within it.
-
-```javascript
-render() {
-  const items = this.state.items.map((item, i) => (
-    <div key={item} onClick={() => this.handleRemove(i)}>
-      <CSSTransitionGroup transitionName="example">
-        {item}
-      </CSSTransitionGroup>
-    </div>
-  ));
-
-  return (
-    <div>
-      <button onClick={this.handleAdd}>Add Item</button>
-      {items}
-    </div>
-  );
-}
+```
+git@github.com:reactjs/react-transition-group.git
 ```
 
-### Animating One or Zero Items
+Then run `npm install` (or `yarn`), and finally `npm run storybook` to start a storybook instance that you can navigate to in your browser to see the examples.
 
-In the example above, we rendered a list of items into `CSSTransitionGroup`. However, the children of `CSSTransitionGroup` can also be one or zero items. This makes it possible to animate a single element entering or leaving. Similarly, you can animate a new element replacing the current element. For example, we can implement a simple image carousel like this:
-
-```javascript
-import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
-
-function ImageCarousel(props) {
-  return (
-    <div>
-      <CSSTransitionGroup
-        transitionName="carousel"
-        transitionEnterTimeout={300}
-        transitionLeaveTimeout={300}>
-        <img src={props.imageSrc} key={props.imageSrc} />
-      </CSSTransitionGroup>
-    </div>
-  );
-}
-```
-
-### Disabling Animations
-
-You can disable animating `enter` or `leave` animations if you want. For example, sometimes you may want an `enter` animation and no `leave` animation, but `CSSTransitionGroup` waits for an animation to complete before removing your DOM node. You can add `transitionEnter={false}` or `transitionLeave={false}` props to `CSSTransitionGroup` to disable these animations.
-
-> Note:
->
-> When using `CSSTransitionGroup`, there's no way for your components to be notified when a transition has ended or to perform any more complex logic around animation. If you want more fine-grained control, you can use the lower-level `TransitionGroup` API which provides the hooks you need to do custom transitions.
-
-* * *
-
-## Low-level API: TransitionGroup
-
-**Importing**
-
-```javascript
-import TransitionGroup from 'react-transition-group/TransitionGroup' // ES6
-var TransitionGroup = require('react-transition-group/TransitionGroup') // ES5 with npm
-```
-
-`TransitionGroup` is the basis for animations. When children are declaratively added or removed from it (as in the [example above](#getting-started)), special lifecycle hooks are called on them.
-
- - [`componentWillAppear()`](#componentwillappear)
- - [`componentDidAppear()`](#componentdidappear)
- - [`componentWillEnter()`](#componentwillenter)
- - [`componentDidEnter()`](#componentdidenter)
- - [`componentWillLeave()`](#componentwillleave)
- - [`componentDidLeave()`](#componentdidleave)
-
-#### Rendering a Different Component
-
-`TransitionGroup` renders as a `span` by default. You can change this behavior by providing a `component` prop. For example, here's how you would render a `<ul>`:
-
-```javascript
-<TransitionGroup component="ul">
-  {/* ... */}
-</TransitionGroup>
-```
-
-Any additional, user-defined, properties will become properties of the rendered component. For example, here's how you would render a `<ul>` with CSS class:
-
-```javascript
-<TransitionGroup component="ul" className="animated-list">
-  {/* ... */}
-</TransitionGroup>
-```
-
-Every DOM component that React can render is available for use. However, `component` does not need to be a DOM component. It can be any React component you want; even ones you've written yourself! Just write `component={List}` and your component will receive `this.props.children`.
-
-#### Rendering a Single Child
-
-People often use `TransitionGroup` to animate mounting and unmounting of a single child such as a collapsible panel. Normally `TransitionGroup` wraps all its children in a `span` (or a custom `component` as described above). This is because any React component has to return a single root element, and `TransitionGroup` is no exception to this rule.
-
-However if you only need to render a single child inside `TransitionGroup`, you can completely avoid wrapping it in a `<span>` or any other DOM component. To do this, create a custom component that renders the first child passed to it directly:
-
-```javascript
-function FirstChild(props) {
-  const childrenArray = React.Children.toArray(props.children);
-  return childrenArray[0] || null;
-}
-```
-
-Now you can specify `FirstChild` as the `component` prop in `<TransitionGroup>` props and avoid any wrappers in the result DOM:
-
-```javascript
-<TransitionGroup component={FirstChild}>
-  {someCondition ? <MyComponent /> : null}
-</TransitionGroup>
-```
-
-This only works when you are animating a single child in and out, such as a collapsible panel. This approach wouldn't work when animating multiple children or replacing the single child with another child, such as an image carousel. For an image carousel, while the current image is animating out, another image will animate in, so `<TransitionGroup>` needs to give them a common DOM parent. You can't avoid the wrapper for multiple children, but you can customize the wrapper with the `component` prop as described above.
-
-* * *
-
-## Reference
-
-### `componentWillAppear()`
-
-```javascript
-componentWillAppear(callback)
-```
-
-This is called at the same time as `componentDidMount()` for components that are initially mounted in a `TransitionGroup`. It will block other animations from occurring until `callback` is called. It is only called on the initial render of a `TransitionGroup`.
-
-* * *
-
-### `componentDidAppear()`
-
-```javascript
-componentDidAppear()
-```
-
-This is called after the `callback` function that was passed to `componentWillAppear` is called.
-
-* * *
-
-### `componentWillEnter()`
-
-```javascript
-componentWillEnter(callback)
-```
-
-This is called at the same time as `componentDidMount()` for components added to an existing `TransitionGroup`. It will block other animations from occurring until `callback` is called. It will not be called on the initial render of a `TransitionGroup`.
-
-* * *
-
-### `componentDidEnter()`
-
-```javascript
-componentDidEnter()
-```
-
-This is called after the `callback` function that was passed to [`componentWillEnter()`](#componentwillenter) is called.
-
-* * *
-
-### `componentWillLeave()`
-
-```javascript
-componentWillLeave(callback)
-```
-
-This is called when the child has been removed from the `TransitionGroup`. Though the child has been removed, `TransitionGroup` will keep it in the DOM until `callback` is called.
-
-* * *
-
-### `componentDidLeave()`
-
-```javascript
-componentDidLeave()
-```
-
-This is called when the `willLeave` `callback` is called (at the same time as `componentWillUnmount()`).
-
-
-* * *
-
-**A derivative of "Animation Add-Ons" by the React authors and contributors, used under [CC BY](https://github.com/facebook/react/blob/master/LICENSE-docs).**
+[npm-badge]: https://img.shields.io/npm/v/react-transition-group.svg
+[npm]: https://www.npmjs.org/package/react-transition-group
